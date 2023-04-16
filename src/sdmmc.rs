@@ -179,7 +179,7 @@ where
             // Supply minimum of 74 clock cycles without CS asserted.
             s.cs_high()?;
             for _ in 0..10 {
-                s.send(0xFF)?;
+                s.receive()?;
             }
             // Assert CS
             s.cs_low()?;
@@ -299,7 +299,9 @@ where
 
     /// Perform a command.
     fn card_command(&self, command: u8, arg: u32) -> Result<u8, Error> {
-        self.wait_not_busy()?;
+        if command != CMD0 && command != CMD12 {
+            self.wait_not_busy()?;
+        }
         let mut buf = [
             0x40 | command,
             (arg >> 24) as u8,
